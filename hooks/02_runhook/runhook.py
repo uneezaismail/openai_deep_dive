@@ -105,7 +105,6 @@ helper_agent = Agent(
 )
 
 
-
 async def main():
     result = await Runner.run(
         helper_agent,

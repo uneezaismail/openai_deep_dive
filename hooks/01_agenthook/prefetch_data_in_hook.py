@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from dotenv import load_dotenv
 import asyncio, os
 from typing import Any, Optional
@@ -19,8 +20,6 @@ from agents.run import RunConfig
 from rich import print
 
 load_dotenv()
-# set_tracing_disabled(disabled=True)
-# enable_verbose_stdout_logging()
 
 API_KEY = os.environ.get("GEMINI_API_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -37,98 +36,46 @@ config = RunConfig(
     model=model
 )
 
-# tool
+
+@dataclass
+class UserInfo:
+    name: Optional[str] = None  
+
+
+
+class PreFetchHook(AgentHooks[UserInfo]):
+    async def on_start(self, context: RunContextWrapper[UserInfo], agent: Agent):
+        print(f"[Hook] on_start called, current name: {context.context.name}")
+        context.context.name = "Ali"
+        print(f"[Hook] Updated name to: {context.context.name}")
+
+
 @function_tool
-def get_user_data(name: str) -> str:
-    return f"{name} is a student of giaic"
+async def get_user_name(wrapper: RunContextWrapper[UserInfo]) -> str:
+    return f"The user's name is {wrapper.context.name}"
 
 
 
-# hooks
-class AgentEventHook(AgentHooks):
-    # Runs when the agent starts
-    async def on_start(self, context: RunContextWrapper, agent: Agent) -> None:
-        print("Agent started hook")
-        print(context.usage.input_tokens)
-
-    # Runs when the agent finishes and gives output
-    async def on_end(self, context: RunContextWrapper, agent: Agent, output: Any) -> None:
-        print("Agent ended hook")
-        print(context.usage.output_tokens)
-
-    # Runs just before the agent makes a request to the LLM
-    async def on_llm_start(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        system_prompt: Optional[str],
-        input_items: list[TResponseInputItem],
-    ) -> None:
-        print("LLM start hook")
-
-    # Runs right after the LLM gives its response
-    async def on_llm_end(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        response: ModelResponse,
-    ) -> None:
-        print("LLM end hook")
-
-    # Runs when one agent hands off to another
-    async def on_handoff(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        source: Agent,
-    ) -> None:
-        print(f"Handoff from {source.name} to {agent.name}")
-
-    # Runs before a tool is called
-    async def on_tool_start(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        tool: Tool,
-    ) -> None:
-        print(f"Tool started: {tool.name}")
-
-    # Runs after a tool is done running
-    async def on_tool_end(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        tool: Tool,
-        result: str,
-    ) -> None:
-        print(f"Tool ended: {tool.name}, result: {result}")
-
-
-
-review_agent = Agent(
-    name="review_agent",
-    instructions="You are a reviewer agent. Review and refine the output given by the helper agent.",
-    model=model,
-)
-
-
-helper_agent = Agent(
+agent = Agent[UserInfo](
     name="helper_agent",
-    instructions="You are a helper agent get the user data.",
+    instructions="you are a helper agent .help user to get their data using tool",
     model=model,
-    tools=[get_user_data],   
-    hooks=AgentEventHook(),
-    handoffs= [review_agent]
+    hooks=PreFetchHook(),
+    tools=[get_user_name]
 )
+
 
 
 async def main():
+
+    user_info = UserInfo()
+
     result = await Runner.run(
-        helper_agent,
-        "give me uneeza data.",
-        run_config=config,
+        starting_agent=agent,
+        input="Could you please tell me user name",
+        context=user_info,
     )
-    print("\nFinal Output:\n", result.final_output)
+    print("\nFinal Output:", result.final_output)
 
 
 asyncio.run(main())
