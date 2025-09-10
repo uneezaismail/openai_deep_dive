@@ -39,7 +39,6 @@ config=RunConfig(
 async def hacking_guardrail( 
     ctx: RunContextWrapper[None], agent: Agent, input: str | list[TResponseInputItem]
 ) -> GuardrailFunctionOutput:
-    
     return GuardrailFunctionOutput(
         output_info=None, 
         tripwire_triggered=False,
