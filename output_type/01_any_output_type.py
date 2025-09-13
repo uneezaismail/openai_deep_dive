@@ -19,7 +19,6 @@ from agents.run import RunConfig
 from rich import print
 
 load_dotenv()
-set_tracing_disabled(disabled=True)
 
 API_KEY=os.environ.get("GEMINI_API_KEY")
 OPENAI_API_KEY=os.environ.get("OPENAI_API_KEY")

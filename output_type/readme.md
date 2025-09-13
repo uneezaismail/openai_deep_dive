@@ -60,3 +60,41 @@ When using `AgentOutputSchema`, you can control how strictly the agent follows y
 - The agent **tries** to follow your schema, but can be flexible.  
 - Can handle cases where the response is close but not perfect.  
 - **Best for:** exploratory tasks, partial structure, or when your schema isn’t fully strict-compatible.
+
+---
+
+## In-depth Concepts of `output_type`
+
+When you set an `output_type`, the SDK runs through a series of checks to decide whether it should be used directly or wrapped inside a `"response"` key. The flow is like this:
+
+1. **Plain text case**  
+   - If `output_type` is `str` or `None` → treated as plain text.  
+   - No JSON schema is generated, and no `"response"` wrapping happens.  
+
+2. **BaseModel or TypedDict case**  
+   - If `output_type` is a subclass of `pydantic.BaseModel` or a `TypedDict` → trusted as an **object-shaped schema**.  
+   - Used directly, without wrapping.  
+
+3. **Everything else**  
+   - If it’s not `str`, not `None`, and not a `BaseModel`/`TypedDict`, the SDK **wraps it inside a dictionary** with the key `"response"`.  
+   - Examples:  
+     - `int` → `{"response": 42}`  
+     - `list[str]` → `{"response": ["a", "b"]}`  
+     - `dataclass` → `{"response": {"field": "value"}}`  
+
+4. **Strict schema check**  
+   - If `strict_json_schema=True`, the SDK will enforce that the generated schema is strictly valid.  
+   - If the schema can’t be made strict → raises a `UserError`.  
+
+5. **Validation at runtime**  
+   - When parsing model output, if wrapping was expected but `"response"` is missing, it raises a `ModelBehaviorError`.  
+   - This means developer errors (bad schema) and model errors (bad output) are caught separately.  
+
+---
+
+ **Key takeaway:**  
+- Only **plain text (`str`/`None`)** and **object-shaped types (`BaseModel`, `TypedDict`)** are left unwrapped.  
+- **All other types (dataclasses, lists, ints, bools, etc.)** are automatically wrapped inside a `"response"` key to guarantee valid JSON schema.  
+
+
+👉 You will also see this `"response"` key clearly in your traces.
