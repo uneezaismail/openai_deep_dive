@@ -45,6 +45,11 @@ class DevOutput(BaseModel):
 
 # dataclass would be wrapped
 @dataclass    
+class DevOutput():
+    message:str
+
+# no wrap will treat it like normal pydantic classes
+@dataclass    
 class DevOutput(BaseModel):
     message:str
 
