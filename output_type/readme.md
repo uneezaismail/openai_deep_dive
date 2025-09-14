@@ -100,3 +100,5 @@ When you set an `output_type`, the SDK runs through a series of checks to decide
 👉 You will also see this `"response"` key clearly in your traces.
 
 📄 [Download the PDF with MCQs on this topic](agent_outputschema_mcqs.pdf)
+
+[Google Drive link](https://drive.google.com/file/d/1_GSFW5nKz2bNlPpZKbaN7bFx_sZmwGkB/view?usp=sharing)
