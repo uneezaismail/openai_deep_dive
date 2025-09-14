@@ -43,9 +43,9 @@ class DevOutput(BaseModel):
     response:str
 
 
-# dataclass
+# dataclass correct syntax
 @dataclass    
-class DevOutput(BaseModel):
+class DevOutput:
     response:str
     
 
