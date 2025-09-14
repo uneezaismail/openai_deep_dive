@@ -38,16 +38,20 @@ config=RunConfig(
 ) 
 
 
-# pydatic class
+# pydatic class not be wrapped
 class DevOutput(BaseModel):
-    response:str
+    message:str
 
 
-# dataclass
+# dataclass would be wrapped
 @dataclass    
 class DevOutput(BaseModel):
-    response:str
-    
+    message:str
+
+# will not be wrapped
+class DevOutput(TypedDict):
+    message:str
+  
 
 agent = Agent(  
     name="developer agent",
