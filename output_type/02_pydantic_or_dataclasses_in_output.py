@@ -42,8 +42,7 @@ config=RunConfig(
 class DevOutput(BaseModel):
     response:str
 
-
-# dataclass correct syntax
+# dataclass
 @dataclass    
 class DevOutput:
     response:str
