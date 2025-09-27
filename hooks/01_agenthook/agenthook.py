@@ -44,6 +44,10 @@ def word_count(text: str) -> str:
     count = len(text.split())
     return f"The text contains {count} words."
 
+@function_tool
+def get_user() -> str:
+    return f"uneeza"
+
 
 # hooks
 class AgentEventHook(AgentHooks):
@@ -115,9 +119,9 @@ review_agent = Agent(
 
 helper_agent = Agent(
     name="helper_agent",
-    instructions="You are a helper agent that explains briefly and uses tools when needed.",
+    instructions="You are a helper agent that explains briefly and must call tool.",
     model=model,
-    tools=[word_count],   
+    tools=[word_count,get_user],   
     hooks=AgentEventHook(),
     handoffs= [review_agent]
 )
@@ -126,7 +130,7 @@ helper_agent = Agent(
 async def main():
     result = await Runner.run(
         helper_agent,
-        "Please explain what HTML and CSS are, then count the words.",
+        "Please explain what HTML and CSS are, what is user name.",
         run_config=config,
         
     )

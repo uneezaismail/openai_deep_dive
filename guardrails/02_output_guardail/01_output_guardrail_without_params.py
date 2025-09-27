@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import asyncio, os
 from agents import (
     Agent,
+    AgentHooks,
     GuardrailFunctionOutput,
     InputGuardrailTripwireTriggered,
     OutputGuardrailTripwireTriggered,
@@ -62,17 +63,21 @@ async def biology_guardrail(
         tripwire_triggered=result.final_output.is_biology,
     )
 
+class custom_hook(AgentHooks):
+    async def on_end(self, context, agent, output):
+        print("agent end hook in agent")
 
 agent = Agent(  
     name="Customer support agent",
     instructions="You are a customer support agent. You help customers with all type of their questions.",
     output_guardrails=[biology_guardrail],
-    model=model
+    model=model,
+    hooks=custom_hook()
 )
 
 async def main():
     try:
-        result = await Runner.run(agent, "what is 2 + 2?", run_config=config)
+        result = await Runner.run(agent, "what is cell?", run_config=config)
         print(result.final_output)
         print(result.last_agent)
         print("Guardrail didn't trip")

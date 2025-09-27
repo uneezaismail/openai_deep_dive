@@ -2,16 +2,18 @@ from dotenv import load_dotenv
 import asyncio, os
 from agents import (
     Agent,
+    ModelSettings,
     Runner,
     AsyncOpenAI,
     OpenAIChatCompletionsModel,
-    set_tracing_disabled
+    function_tool,
+    set_tracing_disabled,
+    enable_verbose_stdout_logging
 )
 from agents.run import RunConfig
 from rich import print
 
 load_dotenv()
-set_tracing_disabled(disabled=True)
 
 API_KEY=os.environ.get("GEMINI_API_KEY")
 OPENAI_API_KEY=os.environ.get("OPENAI_API_KEY")
@@ -28,15 +30,21 @@ config=RunConfig(
     model=model
 ) 
 
+@function_tool
+def get_user_data(name:str):
+    return f"{name} is user."
+
 agent = Agent(  
-    name="marketing_agent",
-    instructions="You are a professional marketing assistant. Explain concepts clearly and simply.",
+    name="helper_agent",
+    instructions="You are a helper agent.must use tool to get user data and do not give answer from your own",
     model=model,
+    tools=[get_user_data],
 )
+
 
 async def main():
     
-    result = await Runner.run(agent, "write a a short blog post for students on web development?", run_config=config)
+    result = await Runner.run(agent, "give user uneeza data.")
     print(result.final_output)
 
 asyncio.run(main())
